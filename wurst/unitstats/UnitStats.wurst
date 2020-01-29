@@ -19,7 +19,11 @@ public function unit.adjustStatFlat(StatType stat, real adjustment)
     UnitStats.getInstance(this).getStat(stat).adjustFlat(adjustment)
 
 public function unit.adjustStatPercentage(StatType stat, real adjustment)
-    UnitStats.getInstance(this).getStat(stat).adjustPercentage(adjustment)
+    let loadedStat = UnitStats.getInstance(this).getStat(stat)
+    if( loadedStat == null )
+        error("Loaded stat "+stat.getName()+" was null")
+    else
+        loadedStat.adjustPercentage(adjustment)
 
 
 public class UnitStats
