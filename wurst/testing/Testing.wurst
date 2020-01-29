@@ -1,0 +1,145 @@
+// package Testing
+
+// import StatType
+// import ChatCommand
+// import ClosureForGroups
+// import ObjectIdGenerator
+// import ItemObjEditing
+// import ItemTypeStats
+// import ItemStats
+// import UnitStats
+// import ObjectIds
+// import PlayerMouse
+// import UnitTypeStats
+
+// public let STAT_DAMAGE = new StatType( "Damage", u -> u.getBaseDamage(0).toReal(), (u, damage) -> u.setBaseDamage(damage.round(), 0) )
+// init
+//     STAT_DAMAGE
+//     ..setValueToStringCallback( value -> value.round().toString() )
+//     ..setMinValue(1)
+
+// public let STAT_ARMOR = new StatType( "Armor", u -> u.getArmor(), (u, armor) -> u.setArmor(armor) )
+// init
+//     STAT_ARMOR
+//     ..setValueToStringCallback( value -> value.toString(1) )
+
+// public let STAT_HEALTH = new StatType( "Health", u -> u.getMaxHP(), (u, hp) -> u.setMaxHP(hp.round(), true) )
+// init
+//     STAT_HEALTH
+//     ..setValueToStringCallback( value -> value.round().toString() )
+//     ..setMinValue(1)
+
+// public let STAT_MANA = new StatType( "Mana", u -> u.getMaxMana(), (u, mana) -> u.setMaxMana(mana.round(), true) )
+// init
+//     STAT_MANA
+//     ..setValueToStringCallback( value -> value.round().toString() )
+
+
+// public let STAT_MANA_REGENERATION = new StatType( "ManaRegen", u -> u.getField(UNIT_RF_MANA_REGENERATION), (u, regen) -> u.setField(UNIT_RF_MANA_REGENERATION, regen) )
+// init
+//     STAT_MANA_REGENERATION
+//     ..setValueToStringCallback( value -> value.round().toString() )
+
+// public let STAT_CRIT_CHANCE = new StatType("CritChance", u -> 0, (u, critChance) -> u.setAgi((critChance*100).toInt()) )
+// init
+//     STAT_CRIT_CHANCE
+//     ..setValueToStringCallback( value -> (value*100).toInt().toString() +"%" )
+//     ..setMaxValue(1)
+//     ..setMinValue(0)
+
+// public let STAT_CRIT_DAMAGE = new StatType("CritDamage", u -> 1.5, (u, critdamage) -> skip )
+// init
+//     STAT_CRIT_DAMAGE
+//     ..setValueToStringCallback( value -> (value*100).toInt().toString() +"%" )
+//     ..setMinValue(1.5)
+
+
+
+
+// init
+//     ChatCommand cmd
+
+//     'hfoo'
+//     ..setUnitTypeStat(STAT_DAMAGE, 1000)
+//     ..setUnitTypeStat(STAT_MANA, 1000)
+//     ..setUnitTypeStat(STAT_HEALTH, 50)
+//     ..setUnitTypeStat(STAT_ARMOR, 100)
+
+    
+//     cmd = new ChatCommand("-stats")
+//     ..setDefaultAction() (p,args) ->
+//         let u = p.getSelectedUnit()
+//         if( u == null )
+//             p.print("You must select a unit")
+//         else
+//             p.print(u.getName() + " stats: ")
+//             for statType in StatType.getAllTypes()
+//                 p.print("   " + u.getStatInstance(statType).toString() ) 
+        
+//     for statType in StatType.getAllTypes()
+//         cmd.addSubCommand(statType.getName().toLowerCase())
+//         .addSubCommand("adjust")
+//         ..setArgumentType(ArgumentType.REAL, true)
+//         ..setDefaultAction() (p,args) ->
+//             let u = p.getSelectedUnit()
+//             if( u == null )
+//                 p.print("You must select a unit")
+//             else
+//                 u.getStatInstance(statType).adjustFlat(args.getFirst().toReal())
+        
+
+//     cmd = new ChatCommand("-createunit")
+//     ..setArgumentType(ArgumentType.STRING, true)
+//     ..setDefaultAction() (p, args) ->
+//         let idString = args.getFirst()
+//         if( idString.length() > 4 or idString.length() < 4 )
+//             p.print("Unit ID must be exactly 4 characters long")
+//         else
+//             let unitId = idString.fromRawCode()
+//             let u = createUnit(Player(0), unitId, p.getMousePos(), angle(0))
+//             if( u == null )
+//                 p.print("Doesn't recognize unit type id '{0}'".format(idString))
+//             else
+//                 p.print("Created a unit of type "+u.getName() )
+
+        
+
+// unit tempSelectedUnit = null
+
+// /** Returns the first unit selected by this player. Returns null, if no units are selected */
+// public function player.getSelectedUnit() returns unit
+//     tempSelectedUnit = null
+//     forUnitsSelected(this) (u) ->
+//         if(tempSelectedUnit == null)
+//             tempSelectedUnit = u
+//     return tempSelectedUnit 
+
+
+// let TEST_ITEM = compiletime(ITEM_ID_GEN.next())
+
+// init
+//     // TEST_ITEM
+//     // ..setStatFlat(STAT_ARMOR, 10)
+//     // ..setStatFlat(STAT_DAMAGE, 30)
+//     // ..setStatPercentage(STAT_HEALTH, 0.5)
+
+//     // var testItem = createItem(TEST_ITEM, vec2(0,0))
+    
+//     // var cmd = new ChatCommand("-item")
+
+//     // for statType in StatType.getAllTypes()
+//     //     cmd.addSubCommand(statType.getName().toLowerCase())
+//     //     ..setArgumentType(ArgumentType.REAL, true)
+//     //     ..setDefaultAction() (p, args) ->
+//     //         testItem.setStatFlat(statType, args.getFirst().toReal() )
+
+//     for stat in StatType.getAllTypes()
+//         print(stat.getName())
+
+// @compiletime
+// function defineItem()
+//     new ItemDefinition(TEST_ITEM, 'ratc')
+//     ..setName("Ring")
+//     ..setTooltipBasic("Ring")
+//     ..setTooltipExtended("Does stuff")
+//     ..setAbilities("")

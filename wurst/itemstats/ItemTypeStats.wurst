@@ -1,0 +1,48 @@
+package ItemTypeStats
+
+import StatType
+import HashMap
+
+
+public function int.setStatFlat(StatType statType, real value)
+    ItemTypeStats.getNotNullInstance(this).setStatFlat(statType, value)
+
+public function int.setStatPercentage(StatType statType, real value)
+    ItemTypeStats.getNotNullInstance(this).setStatPercentage(statType, value)
+
+    
+public class ItemTypeStats
+    protected static let instances = new IterableMap<int, thistype>
+    private let percentageStats = new IterableMap<StatType, real>
+    private let flatStats = new IterableMap<StatType, real>
+    
+    construct(int itemId)
+        instances.put(itemId, this)        
+
+    static function getInstance(int itemId) returns thistype
+        return instances.get(itemId)
+
+    static function getNotNullInstance(int itemId) returns thistype
+        let instance = instances.get(itemId)
+        if(instance != null )
+            return instance
+        return new ItemTypeStats(itemId)
+        
+    function getFlatStats() returns IterableMap<StatType, real>
+        return flatStats
+
+    function getPercentageStats() returns IterableMap<StatType, real>
+        return percentageStats
+
+    function setStatFlat(StatType statType, real value)
+        if( flatStats.has(statType) )
+            flatStats.remove(statType)
+        flatStats.put(statType, value)
+
+    
+    function setStatPercentage(StatType statType, real value)
+        if( percentageStats.has(statType) )
+            percentageStats.remove(statType)
+        percentageStats.put(statType, value)
+
+    

@@ -1,0 +1,6 @@
+package LakesStatSystem
+
+import public UnitStats
+import public UnitTypeStats
+import public ItemStats
+import public ItemTypeStats

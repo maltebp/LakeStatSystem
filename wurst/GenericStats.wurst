@@ -1,0 +1,34 @@
+// package GenericStats
+
+// import StatType
+
+// public StatType STAT_DAMAGE = null
+// public StatType STAT_ARMOR = null
+// public StatType STAT_HEALTH = null
+// public StatType STAT_MANA = null
+// public StatType STAT_MOVESPEED = null
+// public StatType STAT_ATTACKSPEED = null
+
+// init
+//     STAT_DAMAGE = new StatType( "Damage", u -> u.getBaseDamage(0).toReal(), (u, damage) -> u.setBaseDamage(damage.round(), 0) )
+//         ..setValueToStringCallback( value -> value.round().toString() )
+//         ..setMinValue(1)
+
+//     STAT_ARMOR = new StatType( "Armor", u -> u.getArmor(), (u, armor) -> u.setArmor(armor) )
+//         ..setValueToStringCallback( value -> value.toString(1) )
+
+//     STAT_HEALTH = new StatType( "Health", u -> u.getMaxHP(), (u, hp) -> u.setMaxHP(hp.round(), true) )
+//         ..setValueToStringCallback( value -> value.round().toString() )
+//         ..setMinValue(1)
+
+//     STAT_MANA = new StatType( "Mana", u -> u.getMaxMana(), (u, mana) -> u.setMaxMana(mana.round(), true) )
+//         ..setValueToStringCallback( value -> value.round().toString() )
+//         ..setMinValue(0)
+
+//     STAT_MOVESPEED = new StatType( "Move Speed", u -> u.getMoveSpeed(), (u, movespeed) -> u.setMoveSpeed(movespeed) )
+//         ..setMinValue(250)
+//         ..setMaxValue(450)
+
+//     STAT_ATTACKSPEED = new StatType("Attack Speed", u -> 1 / u.getAttackCooldown(0), (u, attackspeed) -> u.setAttackCooldown( 1 / attackspeed, 0) )
+//         ..setValueToStringCallback( value -> value.toString(2) )
+//         ..setMinValue(0.01)

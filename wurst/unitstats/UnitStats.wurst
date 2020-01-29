@@ -1,0 +1,128 @@
+package UnitStats
+
+import HashMap
+import StatType
+import ErrorHandling
+import UnitIndexer
+import UnitTypeStats
+
+public function unit.getStatInstance(StatType stat) returns UnitStat
+    return UnitStats.getInstance(this).getStat(stat)
+
+public function unit.getStat(StatType stat) returns real
+    return UnitStats.getInstance(this).getStat(stat).getAdjustedValue()
+
+public function unit.setStatBase(StatType stat, real value)
+    UnitStats.getInstance(this).getStat(stat).setBase(value)
+
+public function unit.adjustStatFlat(StatType stat, real adjustment)
+    UnitStats.getInstance(this).getStat(stat).adjustFlat(adjustment)
+
+public function unit.adjustStatPercentage(StatType stat, real adjustment)
+    UnitStats.getInstance(this).getStat(stat).adjustPercentage(adjustment)
+
+
+public class UnitStats
+    protected static thistype array instances
+    private let stats = new IterableMap<StatType, UnitStat>
+    private unit statUnit
+    private int unitIndex
+    
+    construct(unit statUnit)
+        unitIndex = statUnit.getIndex()
+        if( instances[unitIndex] != null )
+            error("LakeStatSystem: Array slot with index "+unitIndex.toString() + " was not null in 'instances' array. Something is probably wrong with unit indexing.")
+        
+        instances[unitIndex] = this
+
+        this.statUnit = statUnit
+        for statType in StatType.getAllTypes()
+            stats.put( statType, new UnitStat(statUnit, statType))
+
+        let unitTypeStats = statUnit.getTypeId().getUnitTypeStats()
+        if( unitTypeStats != null )
+            for statType in unitTypeStats
+                stats.get(statType).setBase(unitTypeStats.get(statType))
+
+    ondestroy
+        for key in stats
+            destroy stats.get(key)
+        destroy stats
+        instances[unitIndex] = null
+
+    static function getInstance(unit u) returns thistype
+        let instance = instances[u.getIndex()]
+        if( instance == null)
+            error("LakeStatSystem: Unit doesn't have a UnitStats instance. Something is probably wrong with Unit Indexing")
+        if(instance.statUnit != u)
+            error("LakeStatSystem: Instance with index "+u.getIndex().toString()+" does not match with the argument unit")
+        return instance
+        
+    function getStat(StatType statType) returns UnitStat
+        return stats.get(statType)
+        
+
+public class UnitStat
+    private StatType statType
+    private unit u
+
+    private real baseValue = 0
+    private real adjustmentFlat = 0
+    private real adjustmentPercentage = 1
+
+
+    construct(unit u, StatType statType)
+        this.u = u
+        this.statType = statType
+        baseValue = statType.getUnitDefault(u)
+
+    function updateUnit()
+        if( u != null )
+            statType.updateUnit(u, getAdjustedValue() )
+
+    function getAdjustedValue() returns real
+        var value = (baseValue+adjustmentFlat) * adjustmentPercentage
+        return statType.adjustValue(value)
+
+    function getBaseValue() returns real
+        return baseValue
+
+    function getAdjustmentFlat() returns real
+        return adjustmentFlat
+
+    function getAdjustmentPercentage() returns real
+        return adjustmentPercentage
+
+    function setBase(real baseValue)
+        this.baseValue = baseValue
+        updateUnit()
+    
+    function adjustFlat(real adjustment)
+        adjustmentFlat += adjustment
+        updateUnit()
+
+    function adjustPercentage(real adjustment)
+        adjustmentPercentage += adjustment
+        updateUnit()
+
+    function toString() returns string
+        return "{0}: {1}    [ ({2}+{3})*{4} ]".format(
+            statType.getName(),
+            statType.valueToString(getAdjustedValue()),
+            statType.valueToString(getBaseValue()),
+            statType.valueToString(getAdjustmentFlat()),
+            adjustmentPercentage.toString(2)
+        )
+            
+
+init       
+    onUnitIndex() ->
+        new UnitStats(getIndexingUnit())
+
+    onUnitDeindex() ->
+        let index = getIndexingUnit().getIndex() 
+        if( UnitStats.instances[index] == null)
+            error("LakesStatsSystem: Deindexed unit did not have a UnitStats instance. Something is probably wrong with unit indexing.")
+        destroy UnitStats.instances[index]
+                
+        

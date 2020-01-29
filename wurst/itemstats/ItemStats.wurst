@@ -1,0 +1,106 @@
+package ItemStats
+
+import RegisterEvents
+import LinkedList
+import ItemTypeStats
+import HashMap
+import StatType
+import UnitStats
+
+
+public function item.getStatPercentage(StatType stat) returns real
+    return ItemStats.getInstance(this).getStatPercentage(stat)
+
+public function item.getStatFlat(StatType stat) returns real
+    return ItemStats.getInstance(this).getStatFlat(stat)
+
+public function item.setStatPercentage(StatType stat, real value)
+    ItemStats.getInstance(this).setStatPercentage(stat, value)
+
+public function item.setStatFlat(StatType stat, real value)
+    ItemStats.getInstance(this).setStatFlat(stat, value)
+
+
+class ItemStats
+    protected static let instances = new LinkedList<ItemStats>
+
+    private IterableMap<StatType, real> percentageStats
+    private IterableMap<StatType, real> flatStats
+
+    protected item itemObj 
+    protected unit owner = null
+
+    construct(item itemObj)
+        this.itemObj = itemObj
+        instances.add(this)
+        let typeStats = ItemTypeStats.getInstance(itemObj.getTypeId())
+        if( typeStats != null )
+            percentageStats = typeStats.getPercentageStats().copy()
+            flatStats = typeStats.getFlatStats().copy()
+            
+    static function getInstance(item itemObj) returns thistype
+        // We also clean up instance list here
+        for instance in instances
+            if( instance.itemObj == null )
+                destroy instance
+            else if( instance.itemObj == itemObj)
+                return instance
+        
+        return new ItemStats(itemObj)
+
+    function setStatFlat(StatType statType, real value)
+        adjustOwnerStats(false)
+        if( flatStats.has(statType) )
+            flatStats.remove(statType)
+        flatStats.put(statType, value)
+        adjustOwnerStats(true)
+
+    function setStatPercentage(StatType statType, real value)
+        adjustOwnerStats(false)
+        if( percentageStats.has(statType) )
+            percentageStats.remove(statType)
+        percentageStats.put(statType, value)
+        adjustOwnerStats(true)
+
+    function getStatFlat(StatType statType) returns real
+        if( flatStats.has(statType) )
+            return flatStats.get(statType)
+        return 0
+
+    function getStatPercentage(StatType statType) returns real
+        if( percentageStats.has(statType) )
+            return percentageStats.get(statType)
+        return 0
+
+    protected function setOwner(unit owner)
+        if( this.owner != null )
+            print("Updating owner stats!")
+            adjustOwnerStats(false)          
+        this.owner = owner
+        adjustOwnerStats(true)
+
+    protected function adjustOwnerStats(bool add)
+        if(owner != null)
+            let factor = add ? 1 : -1
+            for stat in flatStats
+                owner.adjustStatFlat(stat, flatStats.get(stat) * factor)
+            for stat in percentageStats
+                owner.adjustStatPercentage(stat, percentageStats.get(stat) * factor)
+
+
+function itemAcquired()
+    let manipulatingUnit = GetManipulatingUnit()
+    let itemObj = GetManipulatedItem()
+    let itemStatInstance = ItemStats.getInstance(itemObj)
+    itemStatInstance.setOwner(manipulatingUnit)
+    
+function itemLost()
+    let itemObj = GetManipulatedItem()
+    let itemStatInstance = ItemStats.getInstance(itemObj)
+    print(GetManipulatingUnit().getName() + " dropped item "+itemObj.getName())
+    itemStatInstance.setOwner(null)
+
+init
+    registerPlayerUnitEvent( EVENT_PLAYER_UNIT_PICKUP_ITEM, function itemAcquired )
+    registerPlayerUnitEvent( EVENT_PLAYER_UNIT_DROP_ITEM, function itemLost )
+

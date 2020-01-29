@@ -1,0 +1,96 @@
+package StatType
+
+import LinkedList
+import ErrorHandling
+
+interface DefaultCallback
+    function run(unit u) returns real
+
+interface UpdateCallback
+    function run(unit u, real stat)
+
+interface ValueToStringCallback
+    function run(real stat) returns string
+
+public class StatType
+    private static let allTypes = new LinkedList<StatType>
+
+    protected string name
+
+    protected real min = 0
+    protected real max = 0
+    protected bool minEnabled = false
+    protected bool maxEnabled = false
+
+    protected DefaultCallback defaultCallback
+    protected UpdateCallback updateCallback
+
+    protected ValueToStringCallback toStringCallback = null
+
+    construct( string name, DefaultCallback setBaseCallback, UpdateCallback updateUnitCallback )
+        this.name = name
+        this.defaultCallback = setBaseCallback
+        this.updateCallback = updateUnitCallback
+        allTypes.add(this)
+   
+
+    function setMinValue(real value)
+        minEnabled = true
+        min = value
+    
+    function setMaxValue(real value)
+        maxEnabled = true
+        max = value
+
+    function getUnitDefault(unit u) returns real
+        return defaultCallback.run(u)
+
+    function updateUnit(unit u, real stat)
+        updateCallback.run(u, stat)
+        
+    function adjustValue(real value) returns real
+        var adjustedValue = value
+        // Adjust to minimum
+        if( minEnabled and value < min )
+            adjustedValue = min
+
+        // Adjust to maximum
+        if( maxEnabled and value > max )
+            adjustedValue = max 
+    
+        return adjustedValue
+
+    function getName() returns string
+        return name
+
+    function valueToString(real value) returns string
+        if( toStringCallback == null )
+            return value.toString()
+        return toStringCallback.run(value)
+
+    function setValueToStringCallback(ValueToStringCallback callback)
+        if( toStringCallback != null )
+            error("LakesStatSystem: To string callback has already been set.")
+        toStringCallback = callback
+
+
+    static function getAllTypes() returns LinkedList<StatType>
+        return allTypes
+
+
+//================================================================================================================================================================================================
+// UNIT TESTING
+
+@Test
+function testDecimalAdjustments()
+    
+    // Setup
+    let statType = new StatType("Test Stat Type", null, null )
+    //let stat = new Stat(null, statType)
+
+    // Testing initial values
+    //stat.getBaseValue().assertEquals(1)
+    // stat.getAdjustmentFlat().assertEquals(0)
+    // stat.getAdjustmentPercentage().assertEquals(1)
+    // stat.getAdjustedValue().assertEquals(1)
+        

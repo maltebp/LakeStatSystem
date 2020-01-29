@@ -1,0 +1,42 @@
+package UnitTypeStats
+
+import StatType
+import HashMap
+
+/** Sets the stat value of given type for this unit type to
+    the given value */
+public function int.setUnitTypeStat(StatType stat, real value)
+    UnitTypeStats.getNotNullInstance(this).setStat(stat, value)
+
+/** Returns an iterable map of all StatTypes set for this unit type
+    and the corresponding values. */
+public function int.getUnitTypeStats() returns IterableMap<StatType, real>
+    let instance = UnitTypeStats.getInstance(this)
+    if( instance == null )
+        return null
+    return instance.getStats()
+
+class UnitTypeStats
+    protected static let instances = new IterableMap<int, thistype>
+    private let stats = new IterableMap<StatType, real>
+    
+    construct(int itemId)
+        instances.put(itemId, this)        
+
+    static function getInstance(int itemId) returns thistype
+        return instances.get(itemId)
+
+    static function getNotNullInstance(int itemId) returns thistype
+        let instance = instances.get(itemId)
+        if(instance != null )
+            return instance
+        return new UnitTypeStats(itemId)
+
+    function getStats() returns IterableMap<StatType, real>
+        return stats
+    
+    function setStat(StatType stat, real value)
+        if(stats.has(stat))
+            stats.remove(stat)
+        stats.put(stat, value)
+
