@@ -1,4 +1,4 @@
-package LakesStatSystem
+package LakeStatSystem
 
 import public UnitStats
 import public UnitTypeStats
