@@ -81,10 +81,12 @@ class ItemStats
     protected function adjustOwnerStats(bool add)
         if(owner != null)
             let factor = add ? 1 : -1
-            for stat in flatStats
-                owner.adjustStatFlat(stat, flatStats.get(stat) * factor)
-            for stat in percentageStats
-                owner.adjustStatPercentage(stat, percentageStats.get(stat) * factor)
+            if( flatStats != null)
+                for stat in flatStats
+                    owner.adjustStatFlat(stat, flatStats.get(stat) * factor)
+            if( percentageStats != null)
+                for stat in percentageStats
+                    owner.adjustStatPercentage(stat, percentageStats.get(stat) * factor)
 
 
 function itemAcquired()
