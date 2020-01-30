@@ -5,6 +5,7 @@ import StatType
 import ErrorHandling
 import UnitIndexer
 import UnitTypeStats
+import LinkedList
 
 public function unit.getStatInstance(StatType stat) returns UnitStat
     return UnitStats.getInstance(this).getStat(stat)
@@ -21,8 +22,17 @@ public function unit.adjustStatFlat(StatType stat, real adjustment)
 public function unit.adjustStatPercentage(StatType stat, real adjustment)
     UnitStats.getInstance(this).getStat(stat).adjustPercentage(adjustment)
 
+public interface UnitStatCallback
+    function run(unit u)
+
+/**
+    Add a callback which will be run after a unit has entered the map and
+    its stats has been initialized (i.e. adjusted to its UnitType) */
+public function afterUnitStatsInitialized(UnitStatCallback callback)
+    UnitStats.afterInitCallbacks.add(callback)
 
 public class UnitStats
+    protected static let afterInitCallbacks = new LinkedList<UnitStatCallback>
     protected static thistype array instances
     private let stats = new IterableMap<StatType, UnitStat>
     private unit statUnit
@@ -43,6 +53,9 @@ public class UnitStats
         if( unitTypeStats != null )
             for statType in unitTypeStats
                 stats.get(statType).setBase(unitTypeStats.get(statType))
+            
+        for callback in afterInitCallbacks
+            callback.run(statUnit)
 
     ondestroy
         for key in stats
@@ -85,7 +98,7 @@ public class UnitStat
 
     function getAdjustedValue() returns real
         var value = (baseValue+adjustmentFlat) * adjustmentPercentage
-        return statType.adjustValue(value)
+        return statType.correctValue(value)
 
     function getBaseValue() returns real
         return baseValue
@@ -129,3 +142,46 @@ init
         destroy UnitStats.instances[index]
                 
         
+
+//================================================================================================================================================================================================
+// Unit Testing
+
+@Test
+function testPercentageDetermniation()
+    
+    let baseValue = 20.
+    let adjustmentBase = 0.003
+
+    // Setup
+    let statType = new StatType("Test Stat", u -> baseValue, null )
+
+    let stat = new UnitStat(null, statType)
+
+    //Testing initial values
+    stat.getBaseValue().assertEquals(baseValue)
+    stat.getAdjustmentFlat().assertEquals(0)
+    stat.getAdjustmentPercentage().assertEquals(1)
+    stat.getAdjustedValue().assertEquals(baseValue)
+
+    var adjustment = 0.
+    for i=1 to 1000
+        for j=0 to 100
+            adjustment = adjustmentBase * j
+            stat.adjustPercentage(adjustment)
+            stat.adjustPercentage(-adjustment)
+        for j=0 to 100
+            adjustment = adjustmentBase * (100-j)
+            stat.adjustPercentage(adjustment)
+            stat.adjustPercentage(-adjustment)
+        
+    stat.getAdjustedValue().assertEquals(baseValue)
+        
+
+
+//     function adjustDamagePerc( real adjustment)
+//         /* Adjusting the adjustment (lol) such that it only counts in the 1 decimal
+//             of the percentage (2.55 - > 2.5) i.e.
+//             It rounds to the closest int (VERY IMPORTANT!). */
+//         let actualAdjustment = (adjustment * 1000).round()
+//         damagePerc += actualAdjustment
+//         update()

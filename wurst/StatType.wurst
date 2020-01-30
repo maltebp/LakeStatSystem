@@ -46,9 +46,10 @@ public class StatType
         return defaultCallback.run(u)
 
     function updateUnit(unit u, real stat)
-        updateCallback.run(u, stat)
+        if( updateCallback != null )
+            updateCallback.run(u, stat)
         
-    function adjustValue(real value) returns real
+    function correctValue(real value) returns real
         var adjustedValue = value
         // Adjust to minimum
         if( minEnabled and value < min )
@@ -80,17 +81,3 @@ public class StatType
 
 //================================================================================================================================================================================================
 // UNIT TESTING
-
-@Test
-function testDecimalAdjustments()
-    
-    // Setup
-    let statType = new StatType("Test Stat Type", null, null )
-    //let stat = new Stat(null, statType)
-
-    // Testing initial values
-    //stat.getBaseValue().assertEquals(1)
-    // stat.getAdjustmentFlat().assertEquals(0)
-    // stat.getAdjustmentPercentage().assertEquals(1)
-    // stat.getAdjustedValue().assertEquals(1)
-        
