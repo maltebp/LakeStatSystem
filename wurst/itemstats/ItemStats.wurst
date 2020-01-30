@@ -74,7 +74,6 @@ class ItemStats
 
     protected function setOwner(unit owner)
         if( this.owner != null )
-            print("Updating owner stats!")
             adjustOwnerStats(false)          
         this.owner = owner
         adjustOwnerStats(true)
@@ -97,7 +96,6 @@ function itemAcquired()
 function itemLost()
     let itemObj = GetManipulatedItem()
     let itemStatInstance = ItemStats.getInstance(itemObj)
-    print(GetManipulatingUnit().getName() + " dropped item "+itemObj.getName())
     itemStatInstance.setOwner(null)
 
 init
