@@ -3,9 +3,9 @@ package UnitStats
 import HashMap
 import StatType
 import ErrorHandling
-import UnitIndexer
 import UnitTypeStats
 import LinkedList
+import OnUnitEnterLeave
 
 public function unit.getStatInstance(StatType stat) returns UnitStat
     return UnitStats.getInstance(this).getStat(stat)
@@ -33,17 +33,12 @@ public function afterUnitStatsInitialized(UnitStatCallback callback)
 
 public class UnitStats
     protected static let afterInitCallbacks = new LinkedList<UnitStatCallback>
-    protected static thistype array instances
+    protected static let instances = new IterableMap<unit, thistype>
     private let stats = new IterableMap<StatType, UnitStat>
     private unit statUnit
-    private int unitIndex
     
     construct(unit statUnit)
-        unitIndex = statUnit.getIndex()
-        if( instances[unitIndex] != null )
-            error("LakeStatSystem: Array slot with index "+unitIndex.toString() + " was not null in 'instances' array. Something is probably wrong with unit indexing.")
-        
-        instances[unitIndex] = this
+        instances.put(statUnit, this)
 
         this.statUnit = statUnit
         for statType in StatType.getAllTypes()
@@ -61,15 +56,15 @@ public class UnitStats
         for key in stats
             destroy stats.get(key)
         destroy stats
-        instances[unitIndex] = null
+        if( statUnit == null )
+            Log.warn("LakeStatSystem: Destroyed UnitStat instance, but unit was null")
+            instances.remove(statUnit)
 
     static function getInstance(unit u) returns thistype
-        let instance = instances[u.getIndex()]
-        if( instance == null)
-            error("LakeStatSystem: Unit doesn't have a UnitStats instance. Something is probably wrong with Unit Indexing")
-        if(instance.statUnit != u)
-            error("LakeStatSystem: Instance with index "+u.getIndex().toString()+" does not match with the argument unit")
-        return instance
+        if( not instances.has(u) )
+            Log.warn("LakeStatSystem: Unit {0} didn't have a UnitStats instance.".format(u.getName()))
+            return new UnitStats(u)
+        return instances.get(u)
         
     function getStat(StatType statType) returns UnitStat
         let loadedStat = stats.get(statType)
@@ -132,15 +127,21 @@ public class UnitStat
             
 
 init       
-    onUnitIndex() ->
-        new UnitStats(getIndexingUnit())
+    onEnter() ->
+        let u = getEnterLeaveUnit()
+        if( UnitStats.instances.has(u) )
+            Log.warn("LakeStatSystem: Entering unit, {0}, already has a UnitStat instance".format(u.getName()))
+        else
+            new UnitStats(u)
 
-    onUnitDeindex() ->
-        let index = getIndexingUnit().getIndex() 
-        if( UnitStats.instances[index] == null)
-            error("LakesStatsSystem: Deindexed unit did not have a UnitStats instance. Something is probably wrong with unit indexing.")
-        destroy UnitStats.instances[index]
-                
+    onLeave() ->
+        let u = getEnterLeaveUnit()
+        let instance = UnitStats.instances.get(u)
+        if( instance == null  )
+            Log.warn("LakeStatSystem: Leaving unit, {0}, didn't have a UnitStat instance".format(u.getName()))
+        else
+            destroy UnitStats.instances.get(u)
+        
         
 
 //================================================================================================================================================================================================
