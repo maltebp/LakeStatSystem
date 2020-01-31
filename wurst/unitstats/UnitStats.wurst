@@ -14,13 +14,20 @@ public function unit.getStat(StatType stat) returns real
     return UnitStats.getInstance(this).getStat(stat).getAdjustedValue()
 
 public function unit.setStatBase(StatType stat, real value)
-    UnitStats.getInstance(this).getStat(stat).setBase(value)
+    let instance = UnitStats.getInstance(this)
+    if( instance != null )
+        instance.getStat(stat).setBase(value)
 
 public function unit.adjustStatFlat(StatType stat, real adjustment)
-    UnitStats.getInstance(this).getStat(stat).adjustFlat(adjustment)
+    let instance = UnitStats.getInstance(this)
+    if( instance != null )
+        instance.getStat(stat).adjustFlat(adjustment)
 
 public function unit.adjustStatPercentage(StatType stat, real adjustment)
-    UnitStats.getInstance(this).getStat(stat).adjustPercentage(adjustment)
+    let instance = UnitStats.getInstance(this)
+    if( instance != null )
+        instance.getStat(stat).adjustPercentage(adjustment)
+    
 
 public interface UnitStatCallback
     function run(unit u)
