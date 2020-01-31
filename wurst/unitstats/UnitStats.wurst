@@ -58,6 +58,7 @@ public class UnitStats
         destroy stats
         if( statUnit == null )
             Log.warn("LakeStatSystem: Destroyed UnitStat instance, but unit was null")
+        else
             instances.remove(statUnit)
 
     static function getInstance(unit u) returns thistype
