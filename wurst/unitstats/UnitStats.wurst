@@ -69,14 +69,14 @@ public class UnitStats
             callback.run(statUnit)
 
     ondestroy
+        for listener in beforeUnitDeregisteredListeners
+            listener.run(statUnit)
         for key in stats
             destroy stats.get(key)
         destroy stats
         if( statUnit == null )
             Log.warn("LakeStatSystem: Destroyed UnitStat instance, but unit was null")
         else
-            for listener in beforeUnitDeregisteredListeners
-                listener.run(statUnit)
             instances.remove(statUnit)
 
     static function getInstance(unit u) returns thistype
