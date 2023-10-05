@@ -1,5 +1,7 @@
 ---
 projectName: LakesStatSystems
+dependencies:
+- https://github.com/maltebp/wurstStdlib2:1.29.2-new
 buildMapData:
   name: MyMapName
   fileName: MyMapFile

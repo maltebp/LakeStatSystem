@@ -34,13 +34,22 @@ public interface UnitStatCallback
 
 /**
     Add a callback which will be run after a unit has entered the map and
-    its stats has been initialized (i.e. adjusted to its UnitType) */
-public function afterUnitStatsInitialized(UnitStatCallback callback)
-    UnitStats.afterInitCallbacks.add(callback)
+    it has been registered with the stat system */
+public function afterUnitStatsRegistered(UnitStatCallback callback)
+    UnitStats.afterUnitRegisteredListeners.add(callback)
+
+/**
+    Add a callback which will be run before a unit leaves the map, and it will
+    be deregistered from the stat system */
+public function beforeUnitStatsDeregistered(UnitStatCallback callback)
+    UnitStats.beforeUnitDeregisteredListeners.add(callback)
 
 public class UnitStats
-    protected static let afterInitCallbacks = new LinkedList<UnitStatCallback>
+    
+    protected static let afterUnitRegisteredListeners = new LinkedList<UnitStatCallback>
+    protected static let beforeUnitDeregisteredListeners = new LinkedList<UnitStatCallback>
     protected static let instances = new IterableMap<unit, thistype>
+
     private let stats = new IterableMap<StatType, UnitStat>
     private unit statUnit
     
@@ -56,7 +65,7 @@ public class UnitStats
             for statType in unitTypeStats
                 stats.get(statType).setBase(unitTypeStats.get(statType))
             
-        for callback in afterInitCallbacks
+        for callback in afterUnitRegisteredListeners
             callback.run(statUnit)
 
     ondestroy
@@ -66,6 +75,8 @@ public class UnitStats
         if( statUnit == null )
             Log.warn("LakeStatSystem: Destroyed UnitStat instance, but unit was null")
         else
+            for listener in beforeUnitDeregisteredListeners
+                listener.run(statUnit)
             instances.remove(statUnit)
 
     static function getInstance(unit u) returns thistype
@@ -138,7 +149,8 @@ init
     onEnter() ->
         let u = getEnterLeaveUnit()
         if( UnitStats.instances.has(u) )
-            Log.warn("LakeStatSystem: Entering unit, {0}, already has a UnitStat instance".format(u.getName()))
+            Log.warn(
+                "LakeStatSystem: Entering unit, {0}, already has a UnitStat instance".format(u.getName()))
         else
             new UnitStats(u)
 
@@ -146,18 +158,21 @@ init
         let u = getEnterLeaveUnit()
         let instance = UnitStats.instances.get(u)
         if( instance == null  )
-            Log.warn("LakeStatSystem: Leaving unit, {0}, didn't have a UnitStat instance".format(u.getName()))
+            Log.warn(
+                "LakeStatSystem: Leaving unit, {0}, didn't have a UnitStat instance".format(u.getName()))
         else
             destroy UnitStats.instances.get(u)
         
         
 
-//================================================================================================================================================================================================
+// =================================================================================================
 // Unit Testing
 
 @Test
 function testPercentageDetermniation()
     
+    let errorThreshold = 0.0001
+
     let baseValue = 20.
     let adjustmentBase = 0.003
 
@@ -172,19 +187,18 @@ function testPercentageDetermniation()
     stat.getAdjustmentPercentage().assertEquals(1)
     stat.getAdjustedValue().assertEquals(baseValue)
 
-    var adjustment = 0.
     for i=1 to 1000
         for j=0 to 100
-            adjustment = adjustmentBase * j
+            let adjustment = adjustmentBase * j
             stat.adjustPercentage(adjustment)
             stat.adjustPercentage(-adjustment)
         for j=0 to 100
-            adjustment = adjustmentBase * (100-j)
+            let adjustment = adjustmentBase * (100-j)
             stat.adjustPercentage(adjustment)
             stat.adjustPercentage(-adjustment)
         
-    stat.getAdjustedValue().assertEquals(baseValue)
-        
+    let difference = (baseValue - stat.getAdjustedValue()).abs()
+    difference.assertLessThan(errorThreshold)        
 
 
 //     function adjustDamagePerc( real adjustment)
