@@ -33,14 +33,29 @@ public class StatType
         this.updateCallback = updateUnitCallback
         allTypes.add(this)
    
-
     function setMinValue(real value)
         minEnabled = true
         min = value
+
+    function hasMinValue() returns bool
+        return minEnabled
+
+    function getMinValue() returns real
+        if not minEnabled
+            error("Stat type '{0}' has no minimum value.".format(name))
+        return REAL_MIN
     
     function setMaxValue(real value)
         maxEnabled = true
         max = value
+
+    function hasMaxValue() returns bool
+        return maxEnabled
+
+    function getMaxValue() returns real
+        if not maxEnabled
+            error("Stat type '{0}' has no maximum value.".format(name))
+        return REAL_MAX
 
     function getUnitDefault(unit u) returns real
         return defaultCallback.run(u)
